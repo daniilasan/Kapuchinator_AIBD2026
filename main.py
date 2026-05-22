@@ -8,7 +8,7 @@ GIGACHAT_CREDENTIALS = os.getenv("GIGACHAT_CREDENTIALS")
 if not GIGACHAT_CREDENTIALS:
     raise ValueError("Переменная окружения GIGACHAT_CREDENTIALS не установлена")
 
-CERT_PATH = os.getenv("SERTIFICATE_PATH")
+CERT_PATH = os.getenv("CERT_PATH")
 if not CERT_PATH:
     raise ValueError("Переменная окружения CERT_PATH не установлена")
 
