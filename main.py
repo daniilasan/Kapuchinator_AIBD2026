@@ -3,29 +3,7 @@ from dotenv import load_dotenv
 from gigachat import GigaChat
 import requests
 import json
-
-
-_ = load_dotenv()
-
-GIGACHAT_CREDENTIALS = os.getenv('GIGACHAT_CREDENTIALS')
-if not GIGACHAT_CREDENTIALS:
-    raise ValueError('Переменная окружения GIGACHAT_CREDENTIALS не установлена')
-
-CERT_PATH = os.getenv('CERT_PATH')
-if not CERT_PATH:
-    raise ValueError('Переменная окружения CERT_PATH не установлена')
-
-model = GigaChat(
-    credentials=GIGACHAT_CREDENTIALS,
-    model='GigaChat-2-Max',
-    temperature=0.7,
-    verify_ssl_certs=True,
-    ca_bundle_file=CERT_PATH,
-    max_tokens=2000,
-    top_p=0.9,
-    profanity_check=True,
-    timeout=30)
-
+from agent import *
 
 def is_service_avaliable():
     health_url = 'http://127.0.0.1:8000/health'
@@ -64,7 +42,13 @@ def get_user_id(case_id):
     return user_id
 
 
-def evaluate_run(run_id, case_id, answer : str, evidence: list, actions : list): # 'evidence': [ 'string' ]    я хз это что, наверное список строк
+def get_user_question(case_id):
+    url = 'http://127.0.0.1:8000/cases/' + case_id
+    user_question = json.loads(requests.get(url).content)['customer_message']
+    return user_question
+
+
+def evaluate_run(run_id, case_id, answer : str, evidence: list, actions : list):
     url = 'http://127.0.0.1:8000/cases/case_01_subscription_activation/evaluate'
     headers = {
         'accept': 'application/json',
@@ -97,30 +81,28 @@ if __name__ == '__main__':
     if not is_service_avaliable():
         print('Сервис в данный момент недоступен')
         exit()
-    
-    run_id = create_run()
-    print(run_id)
 
     case_number = 0
-    while case_number < 6:
+    while case_number < 8:
+        run_id = create_run()
+        print('Run_id:', run_id)
+
         case_id = get_case_id(case_number)
-        print(case_id)
+        print('Case_id:', case_id)
 
         user_id = get_user_id(case_id)
-        print(user_id)
+        print('User_id:', user_id)
 
-        answer = 'Зачем ты пишешь в поддержку'
-        evidence = 'Неопровержимые доказательства'
-        actions = 'Запрещённые политикой действия'
+        user_question = get_user_question(case_id)
 
-
-        '''  Часть с ИИ агентом  '''
+        answer, evidence, actions = exec_agent(user_question, user_id)
         
 
         evaluate_run(run_id, case_id, answer, evidence, actions)
         case_number += 1
 
-    metrics = get_metrics(run_id)
-    export = get_export(run_id)
-    print(metrics)
-    print(export)
+        metrics = get_metrics(run_id)
+        export = get_export(run_id)
+        print(metrics)
+        print(export)
+    
