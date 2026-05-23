@@ -1,0 +1,1045 @@
+API: Bank Support Agent Sandbox v0.1.0
+Description: Deterministic banking support environment for closed AI-agent hackathons.
+
+ENDPOINTS:
+
+GET /health
+  Summary: Показывает статус сервиса и количество записей в базе.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+
+GET /meta/endpoints
+  Summary: Возвращает публичный каталог доступных API-эндпоинтов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+GET /users
+  Summary: Возвращает список клиентов с краткой анкетой.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+GET /users/{user_id}
+  Summary: Возвращает подробную карточку клиента по идентификатору.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/accounts
+  Summary: Показывает банковские счета выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /accounts/{account_id}
+  Summary: Возвращает данные конкретного банковского счета.
+  Parameters:
+    - account_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/cards
+  Summary: Показывает карты, привязанные к выбранному клиенту.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /cards/{card_id}
+  Summary: Возвращает данные конкретной карты без секретных реквизитов.
+  Parameters:
+    - card_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/transactions
+  Summary: Возвращает операции клиента с фильтрами по статусу и типу.
+  Parameters:
+    - user_id (path, string (required)): No description
+    - status (query, unknown (optional)): No description
+    - kind (query, unknown (optional)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /transactions/{transaction_id}
+  Summary: Возвращает подробности конкретной операции.
+  Parameters:
+    - transaction_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/subscriptions
+  Summary: Показывает подписки и сервисные статусы клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /subscriptions/{subscription_id}
+  Summary: Возвращает данные конкретной подписки.
+  Parameters:
+    - subscription_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/tickets
+  Summary: Показывает обращения клиента в поддержку.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /support/tickets/{ticket_id}
+  Summary: Возвращает карточку обращения в поддержку.
+  Parameters:
+    - ticket_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /support/tickets/{ticket_id}/messages
+  Summary: Показывает переписку внутри обращения.
+  Parameters:
+    - ticket_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /knowledge-base/search
+  Summary: Ищет статьи базы знаний по текстовому запросу и категории.
+  Parameters:
+    - q (query, string (required)): No description
+    - category (query, unknown (optional)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /knowledge-base/articles/{article_id}
+  Summary: Открывает конкретную статью базы знаний.
+  Parameters:
+    - article_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+POST /billing/refund
+  Summary: Создает возврат по подходящей карточной операции.
+  Request Body:
+    Content: application/json
+    Schema: RefundCreateModel
+  Responses:
+    201: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /billing/refunds/{refund_id}
+  Summary: Возвращает созданный возврат по идентификатору.
+  Parameters:
+    - refund_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/refunds
+  Summary: Показывает возвраты выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+POST /disputes
+  Summary: Открывает спор по подходящей операции клиента.
+  Request Body:
+    Content: application/json
+    Schema: DisputeCreateModel
+  Responses:
+    201: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/disputes
+  Summary: Показывает споры выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+POST /billing/reversal
+  Summary: Создает сторно по операции, где нужен reversal вместо refund.
+  Request Body:
+    Content: application/json
+    Schema: ReversalCreateModel
+  Responses:
+    201: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /transactions/{transaction_id}/reversals
+  Summary: Показывает сторно, связанные с выбранной операцией.
+  Parameters:
+    - transaction_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/devices
+  Summary: Показывает устройства и признаки активности клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/kyc
+  Summary: Возвращает статус проверки личности клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/fraud-alerts
+  Summary: Показывает fraud-сигналы по выбранному клиенту.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/limits
+  Summary: Показывает лимиты клиента по картам и операциям.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/loans
+  Summary: Показывает кредиты выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /loans/{loan_id}/payments
+  Summary: Показывает платежи по конкретному кредиту.
+  Parameters:
+    - loan_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/transfers
+  Summary: Показывает переводы выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/cashback
+  Summary: Показывает начисления и ожидания кешбэка клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/notifications
+  Summary: Показывает уведомления, отправленные клиенту.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/audit-events
+  Summary: Показывает аудит действий и изменений по клиенту.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /merchants
+  Summary: Возвращает список известных мерчантов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+GET /merchants/{merchant_id}
+  Summary: Возвращает карточку конкретного мерчанта.
+  Parameters:
+    - merchant_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /merchants/{merchant_id}/incidents
+  Summary: Показывает инциденты и сбои у выбранного мерчанта.
+  Parameters:
+    - merchant_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /transactions/{transaction_id}/authorizations
+  Summary: Показывает авторизации, связанные с операцией.
+  Parameters:
+    - transaction_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /webhooks
+  Summary: Показывает webhook-события с фильтрами по объекту и статусу.
+  Parameters:
+    - entity_id (query, unknown (optional)): No description
+    - status (query, unknown (optional)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /webhooks/{event_id}
+  Summary: Возвращает конкретное webhook-событие.
+  Parameters:
+    - event_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /accounts/{account_id}/ledger
+  Summary: Показывает ledger-записи выбранного счета.
+  Parameters:
+    - account_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/fees
+  Summary: Показывает комиссии выбранного клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/holds
+  Summary: Показывает удержания и блокировки средств клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/identity-documents
+  Summary: Показывает документы, связанные с проверкой личности.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/communication-preferences
+  Summary: Показывает настройки коммуникаций клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/calls
+  Summary: Показывает звонки клиента в поддержку.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/risk-decisions
+  Summary: Показывает риск-решения по выбранному клиенту.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/product-enrollments
+  Summary: Показывает подключения банковских продуктов клиента.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /atms
+  Summary: Возвращает список банкоматов в песочнице.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+GET /atms/{atm_id}
+  Summary: Возвращает карточку конкретного банкомата.
+  Parameters:
+    - atm_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /users/{user_id}/atm-operations
+  Summary: Показывает операции клиента в банкоматах.
+  Parameters:
+    - user_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /service-outages
+  Summary: Показывает зарегистрированные сервисные сбои.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+GET /cases
+  Summary: Возвращает список заданий для решения.
+  Parameters:
+    - X-Case-Password (header, unknown (optional)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /cases/{case_id}
+  Summary: Возвращает условие выбранного задания.
+  Parameters:
+    - case_id (path, string (required)): No description
+    - X-Case-Password (header, unknown (optional)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+POST /cases/{case_id}/evaluate
+  Summary: Проверяет решение задания по evidence, действиям и trace.
+  Parameters:
+    - case_id (path, string (required)): No description
+    - X-Case-Password (header, unknown (optional)): No description
+  Request Body:
+    Content: application/json
+    Schema: EvaluationSubmissionModel
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /runs
+  Summary: Показывает созданные runs в локальной базе.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Array of object
+
+POST /runs
+  Summary: Создает run для одной попытки решения задания.
+  Request Body:
+    Content: application/json
+    Schema: RunCreateModel
+  Responses:
+    201: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /runs/export
+  Summary: Выгружает все runs с trace, метриками и результатами.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+
+POST /runs/{run_id}/finish
+  Summary: Завершает run вручную без отправки нового решения.
+  Parameters:
+    - run_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /runs/{run_id}/metrics
+  Summary: Показывает агрегированные метрики выбранного run.
+  Parameters:
+    - run_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /runs/{run_id}/export
+  Summary: Выгружает полный trace и оценки выбранного run.
+  Parameters:
+    - run_id (path, string (required)): No description
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: object
+    422: Validation Error
+      Content: application/json
+      Schema: HTTPValidationError
+
+GET /legacy/users
+  Summary: Архивный реестр клиентов из старого контура; данные могут расходиться с текущими карточками обслуживания.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/users/{user_id}
+  Summary: Старая анкета клиента без новых KYC-полей; актуальный профиль надежнее брать из основного клиентского раздела.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/accounts/{account_id}
+  Summary: Архивный снимок счета, сохраненный для миграций; баланс и статусы здесь не считаются рабочим источником.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/cards/{card_id}
+  Summary: Карточный профиль прежнего формата, где маски и признаки блокировок могут быть неполными.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/transactions/{transaction_id}
+  Summary: Старая карточка операции без нормализованной связи с мерчантом, спором и банкоматом.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/refunds/{refund_id}
+  Summary: Архив возврата до перехода на новый биллинг; его удобно читать только для исторической сверки.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/disputes/{dispute_id}
+  Summary: Устаревшая модель спора без современных статусов evidence и SLA.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/cases/{case_id}
+  Summary: Черновой формат задания из ранней версии стенда; текущая логика оценки живет в новом наборе кейсов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/knowledge/search
+  Summary: Прежний поиск по базе знаний не учитывает свежие статьи и ранжирование по банковским сценариям.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/risk/{user_id}
+  Summary: Архивный риск-профиль клиента показывает старые признаки и не подходит для принятия решения.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/audit/{user_id}
+  Summary: Старый журнал аудита оставлен для расследований миграции, а не для обычной поддержки клиентов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/support/tickets/{ticket_id}
+  Summary: Прежняя карточка обращения хранит урезанную переписку и не связывает тикет с текущим run.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+POST /legacy/billing/refund-preview
+  Summary: Старый расчет возврата использует прежнюю комиссионную модель и может давать неверную сумму.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+POST /legacy/billing/reversal-preview
+  Summary: Прежний расчет сторно не проверяет современные ATM-сигналы и спорные операции.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/kyc/{user_id}
+  Summary: Архивный KYC-экран не отражает последние документы, проверки санкций и ручные отметки комплаенса.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/cards/{card_id}/limits
+  Summary: Старые лимиты карты показывают историческую конфигурацию без текущих суточных ограничений.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/loans/{loan_id}
+  Summary: Архивная карточка кредита хранит параметры до перерасчета графика и не годится для ответа клиенту.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/cashback/{user_id}
+  Summary: Прежний расчет кешбэка не учитывает новые категории мерчантов и корректировки начислений.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/notifications/{user_id}
+  Summary: Архив уведомлений показывает старую шину доставки без современных статусов provider response.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/atms/{atm_id}
+  Summary: Старая карточка банкомата полезна только для миграционного сравнения, не для живой ATM-проверки.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/webhooks/{event_id}
+  Summary: Архив интеграционного события содержит payload до нормализации и не должен вести расследование.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/merchant/{merchant_id}
+  Summary: Старый профиль мерчанта не содержит свежих инцидентов, MCC-исключений и надежности эквайринга.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/fraud/{user_id}
+  Summary: Архивная fraud-сводка собрана старой моделью и не отражает текущих ручных решений риска.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/fees/{user_id}
+  Summary: Прежний список комиссий хранит исторические тарифы и может конфликтовать с новым биллингом.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /legacy/holds/{user_id}
+  Summary: Архив удержаний не показывает живые сроки разблокировки и современные причины hold.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/open-banking/accounts
+  Summary: Бета-просмотр open banking счетов еще не подключен к стабильной авторизации клиентов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/open-banking/payments
+  Summary: Бета-платежи open banking находятся вне подтвержденного платежного контура стенда.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/users/{user_id}/spending-insights
+  Summary: Бета-аналитика трат строит экспериментальные категории и может ошибаться в назначении расходов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/users/{user_id}/chargeback-predictor
+  Summary: Бета-прогноз chargeback-риска дает гипотезу, а не проверяемое основание для действия.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/cards/{card_id}/virtual-reissue
+  Summary: Бета-перевыпуск виртуальной карты не завершен для безопасного клиентского обслуживания.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+POST /beta/refunds/instant-ai
+  Summary: Бета-механизм мгновенных возвратов принимает решение до полноценной банковской сверки.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/support/copilot-suggestions
+  Summary: Бета-подсказки оператора могут звучать правдоподобно, но не заменяют проверку фактов.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+POST /beta/disputes/auto-classify
+  Summary: Бета-классификация споров не гарантирует корректную категорию для финансового процесса.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /beta/merchants/{merchant_id}/trust-score
+  Summary: Бета-оценка надежности мерчанта не утверждена как источник клиентского решения.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+POST /beta/webhooks/simulate-provider
+  Summary: Бета-симулятор провайдера создает искусственный интеграционный ответ вне реального события.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/search/all
+  Summary: Широкий экспериментальный поиск смешивает банковские, служебные и оценочные данные в одном ответе.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/search/deep
+  Summary: Глубокий экспериментальный поиск раскрывает слишком много связанных сущностей без явной необходимости.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/fraud/network-graph
+  Summary: Экспериментальный fraud-граф показывает неподтвержденные связи между клиентами и операциями.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/atm/telemetry-live
+  Summary: Live-телеметрия банкоматов нестабильна и не совпадает с зафиксированными событиями стенда.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/ledger/reconcile
+  Summary: Экспериментальная сверка ledger-записей может менять диагностические отметки без бизнес-подтверждения.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/outages/predict
+  Summary: Прогноз сбоев сервиса является модельной гипотезой, а не фактом по обращению клиента.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /experimental/notifications/provider-health
+  Summary: Проверка здоровья провайдера уведомлений показывает инфраструктуру, а не статус конкретной доставки.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+GET /sandbox/slow-report/monthly
+  Summary: Медленный месячный отчет агрегирует слишком широкий период и легко уводит расследование в сторону.
+  Responses:
+    200: Successful Response
+      Content: application/json
+      Schema: Unknown
+
+SCHEMAS:
+> * = required
+
+DisputeCreateModel: object
+  - transaction_id*: string
+  - reason*: string
+
+EvaluationSubmissionModel: object
+  - run_id: anyOf [string, null]
+  - answer*: string
+  - evidence: array
+  - actions: array
+
+HTTPValidationError: object
+  - detail: array
+
+RefundCreateModel: object
+  - transaction_id*: string
+  - reason*: string
+  - amount: anyOf [number, string, null]
+
+ReversalCreateModel: object
+  - transaction_id*: string
+  - reason*: string
+
+RunCreateModel: object
+  - team_name*: string
+  - metadata: object
+
+ValidationError: object
+  - loc*: array
+  - msg*: string
+  - type*: string
+

@@ -42,16 +42,8 @@ spec = spec_response.json()
 base_url = spec.get('servers', [{'url': 'http://127.0.0.1:8000'}])[0]['url']
 
 # ================= 4. Формируем текстовое описание эндпоинтов =================
-endpoints_list = []
-for path, methods in spec.get('paths', {}).items():
-    for method, details in methods.items():
-        if method.lower() not in ('get', 'post', 'put', 'delete', 'patch'):
-            continue
-        op_id = details.get('operationId', f"{method}_{path.replace('/', '_')}")
-        summary = details.get('summary', details.get('description', 'Нет описания'))
-        endpoints_list.append(f"- {method.upper()} {path} : {summary} (id: {op_id})")
-
-endpoints_description = "\n".join(endpoints_list)
+with open('openapi_gigachat', 'r', encoding='utf-8') as f:
+    endpoints_description = f.read()
 
 # ================= 5. Единый инструмент call_api =================
 class CallApiInput(BaseModel):
@@ -59,12 +51,16 @@ class CallApiInput(BaseModel):
     url_path: str = Field(
         description="Путь, где параметры уже подставлены. Например, '/clients/123' вместо '/clients/{id}'."
     )
-    query_params: Optional[Dict[str, Any]] = Field(
-        default=None, description="Query-параметры в виде словаря"
+    body: Dict[str, Any] = Field(
+        description="JSON-тело запроса"
     )
-    body: Optional[Dict[str, Any]] = Field(
-        default=None, description="JSON-тело запроса (для POST/PUT/PATCH)"
+    run_id: str = Field(
+        description="run_id, который прямым текстом указывается в начале запроса пользователя."
     )
+    query_params: Dict[str, Any] = Field(
+        description="Query-параметры в виде словаря. Например: {'q': 'подписка', 'limit': 10}"
+    )
+    
 
 class CallApiTool(BaseTool):
     name: str = "call_api"
@@ -74,16 +70,20 @@ class CallApiTool(BaseTool):
     base_url: str = base_url
 
     def _run(self, method: str, url_path: str,
-             query_params: Optional[Dict] = None,
-             body: Optional[Dict] = None) -> str:
+             run_id: str,
+             body: Optional[Dict] = None,
+             query_params: Optional[Dict] = None) -> str:
         full_url = f"{self.base_url}{url_path}"
         method = method.upper()
+        body['X-Run-Id'] = run_id
+        
         print("АГЕНТ ВЫЗЫВАЕТ МЕТОД", method, "ПО URL", full_url)
         print("QUERY_PARAMS:", query_params)
         print("BODY:", body)
+
         try:
             if method == "GET":
-                resp = self.requests_wrapper.get(full_url, params=query_params)
+                resp = self.requests_wrapper.get(full_url, params=query_params, json=body)
             elif method == "POST":
                 resp = self.requests_wrapper.post(full_url, params=query_params, json=body)
             else:
@@ -94,9 +94,6 @@ class CallApiTool(BaseTool):
                 return resp.text
         except Exception as e:
             return f"Ошибка вызова API: {str(e)}"
-
-    async def _arun(self, *args, **kwargs):
-        return self._run(*args, **kwargs)
 
 tools = [CallApiTool()]
 
@@ -113,11 +110,11 @@ system_prompt = f"""
 
 Никогда не выдумывай эндпоинты, которых нет в списке.
 
-Анализируй вызываемые функции API, чтобы понять, решена ли проблема пользователя (Пример: оформлен ли возврат средств/подключена ли подписка).
-ВАЖНО: Проблема решена ТОЛЬКО при выполнении тобой API, которое непосредственно решает проблему пользователя, НЕЛЬЗЯ просто ответить пользователю, что
+Анализируй вызываемые функции API, чтобы понять, решена ли проблема пользователя.
 ТОЛЬКО если проблема решена, то отправь сообщение следующего вида:
 end_of_case: Ответ
 Ответ должен представлять из себя описание проделанных действий и отчёт о том, что проблема выполнена (Пример: Здравствуйте, проблема с подпиской возникла на нашей стороне, был оформлен возврат средств на ваш счёт)
+
 
 """
 
@@ -129,27 +126,15 @@ agent = create_agent(
 )
 
 # ================= 8. Запуск (пример) =================
-def exec_agent(user_question, user_id):
+def exec_agent(run_id, user_question, user_id):
     # user_question = "Почему не прошла оплата 18500 в магазине?"
-    question = 'Пользователь с user_id=' + user_id + ' обратился в поддержку со следующим вопросом: \n' + user_question + '\n Предположи, какую функцию из API нужно вызвать, чтобы найти причину ошибки сервиса'
+    question = 'run_id=' + run_id
+    question += '\nПользователь с user_id=' + user_id + ' обратился в поддержку со следующим вопросом: \n' + user_question + '\n Предположи, какую функцию из API нужно вызвать, чтобы найти причину ошибки сервиса'
     result = agent.invoke({
         "messages": [{"role": "user", "content": question}]
     })
     temp_ans = result["messages"][-1].content
     print("\n=== ОТВЕТ АГЕНТА ===\n")
     print(temp_ans)
-    # i = 0
-    # while i<5:
-    #     if 'end_of_case' in temp_ans:
-    #         print('\n=== КОНЕЦ ===\n')
-    #         break
-    #     question = 'Проанализируй своё предыдущее сообщение и действия и продолжи исследовать и решать проблему пользователя:\n' + user_question
-    #     question += 'Предыдущее рассуждение:\n' + temp_ans
-    #     result = agent.invoke({
-    #         "messages": [{"role": "user", "content": question}]
-    #     })
-    #     temp_ans = result["messages"][-1].content
-    #     print("\n=== ОТВЕТ АГЕНТА", i, "===\n")
-    #     print(temp_ans)
-    #     i += 1
-    return temp_ans.split('end_of_case'), ['Неопровержимые доказательства'], ['Запрещённые политикой действия']
+
+    return temp_ans.split('end_of_case: ')[-1], ['Неопровержимые доказательства'], ['Запрещённые политикой действия']

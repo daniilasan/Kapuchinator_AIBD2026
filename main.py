@@ -1,6 +1,3 @@
-import os
-from dotenv import load_dotenv
-from gigachat import GigaChat
 import requests
 import json
 from agent import *
@@ -83,7 +80,7 @@ if __name__ == '__main__':
         exit()
 
     case_number = 0
-    while case_number < 8:
+    while case_number < 1:
         run_id = create_run()
         print('Run_id:', run_id)
 
@@ -95,14 +92,18 @@ if __name__ == '__main__':
 
         user_question = get_user_question(case_id)
 
-        answer, evidence, actions = exec_agent(user_question, user_id)
+        answer, evidence, actions = exec_agent(run_id, user_question, user_id)
         
 
         evaluate_run(run_id, case_id, answer, evidence, actions)
         case_number += 1
 
+        print('\n=== ОТВЕТ ПОЛЬЗОВАТЕЛЮ ===\n')
+        print(answer)
+
         metrics = get_metrics(run_id)
         export = get_export(run_id)
+        print('\n=== МЕТРИКИ ===\n')
         print(metrics)
         print(export)
     
