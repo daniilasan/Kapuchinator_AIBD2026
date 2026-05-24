@@ -46,7 +46,7 @@ def get_user_question(case_id):
 
 
 def evaluate_run(run_id, case_id, answer : str, evidence: list, actions : list):
-    url = 'http://127.0.0.1:8000/cases/case_01_subscription_activation/evaluate'
+    url = 'http://127.0.0.1:8000/cases/' + case_id + '/evaluate'
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -79,8 +79,8 @@ if __name__ == '__main__':
         print('Сервис в данный момент недоступен')
         exit()
 
-    case_number = 0
-    while case_number < 8:
+    case_number = 1
+    while case_number < 2:
         run_id = create_run()
         print('Run_id:', run_id)
 
