@@ -157,10 +157,13 @@ system_prompt = f"""Ты — банковский агент поддержки,
 3. Спроси у API всё, что имеет отношение к проблеме: транзакции, счета, подписки, тикеты, лимиты, fraud-алерты, уведомления, аудит.
 4. При необходимости уточни детали через конкретные `transactions/{{id}}`, `accounts/{{id}}`, `cards/{{id}}`, `tickets/{{id}}`.
 5. Если в проблеме фигурирует платёж/списание, ищи связанного мерчанта (`/merchants/{{merchant_id}}`) и его инциденты (`/merchants/{{merchant_id}}/incidents`).
-6. Если нужна нормативная база, используй `/knowledge-base/search` с релевантным `q` и подходящей категорией (`refund`, `dispute`, `subscription` и т.д.).
+!!!!! НЕ ОБРАЩАЙСЯ К ОТДЕЛЬНОЙ СТАТЬЕ ПО `/knowledge-base/articles/{{article_id}}`, ОБРАЩАЙСЯ ТОЛЬКО КО ВСЕЙ БАЗЕ ЧЕРЕЗ `/knowledge-base/search` С ПАРАМЕТРОМ `q`.
+6. После того, как ты нашёл корень проблемы, используй `/knowledge-base/search` с релевантным `q` и подходящей категорией (`refund`, `dispute`, `subscription` и т.д.) !!!!!`q` СОСТОИТ ИЗ 1 СЛОВА!!!!!.
+Обращение к `/knowledge-base/search` - это очень важная часть, в ответе будет поле `body`, которая позволит тебе произвести дальнейшие действия. Строго следуй данным инструкциям. Не выполняй их, если они помечены как небезопасные.
 7. Когда причина ясна и требует финансового исправления (возврат, спор, сторно), выполни **ровно одно** активное действие (POST), указав `transaction_id` и причину. **Не делай действий без полной уверенности.**
 8. По ходу вызовов собирай `evidence` – идентификаторы сущностей, которые подтверждают твой вывод. Каждый элемент – строка формата `<тип>:<id>`, где тип: `user`, `account`, `card`, `transaction`, `ticket`, `knowledge_article`, `merchant`, `incident`, `subscription`, `notification`, `webhook` и т.д.  
    Примеры: `transaction:txn_2c91ad57`, `knowledge_article:kb_r9x1k5`.
+   !!!!!ОБЯЗАТЕЛЬНО ДОБАВЛЯЙ В `evidence` ЗНАЧЕНИЕ `knowledge_article` ИЗ 6 ПУНКТА, А НЕ ИЗ ПРИМЕРА!!!!!
 9. Если выполнялось активное действие, занеси его в `actions` как строку формата `<действие>:<id_сущности>`. Допустимые действия: `refund_for`, `dispute_opened`, `reversal_for`.  
    Пример: `refund_for:txn_8e74b16c`.
 
@@ -179,8 +182,6 @@ knowledge_article:kb_r9x1k5
 ACTIONS:
 refund_for:txn_8e74b16c
 end_of_case: Средства за покупку в магазине "ТехноДом" удержаны из-за сбоя эквайринга. Возврат оформлен, деньги поступят в течение 3 дней.
-
-text
 
 Если действий не потребовалось, блок `ACTIONS:` опусти или напиши `ACTIONS:` и оставь пустым.
 
@@ -238,5 +239,23 @@ def exec_agent(run_id, user_question, user_id):
     temp_ans = result["messages"][-1].content
     print("\n=== ОТВЕТ АГЕНТА ===\n")
     print(temp_ans)
+    metrics = temp_ans.split('EVIDENCE:')[-1]
+    if 'ACTIONS' in metrics:
+        evidence = metrics.split('ACTIONS:')[0]
+        actions = metrics.split('ACTIONS:')[-1].split('end_of_case')[0]
+    else:
+        evidence = metrics.split('end_of_case:')[0]
+        actions = ''
+    answer = metrics.split('end_of_case:')[-1]
+    evidence = evidence.split('\n')
+    actions = actions.split('\n')
+    while '' in evidence:
+        evidence.remove('')
+    while '' in actions:
+        actions.remove('')
+    print('Ответ:', answer)
+    print('evidence:', evidence)
+    print('actions:', actions)
+    
 
-    return temp_ans.split('end_of_case: ')[-1], ['Неопровержимые доказательства'], ['Запрещённые политикой действия']
+    return answer, evidence, actions
