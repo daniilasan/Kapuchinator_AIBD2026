@@ -80,7 +80,7 @@ if __name__ == '__main__':
         exit()
 
     case_number = 0
-    while case_number < 1:
+    while case_number < 8:
         run_id = create_run()
         print('Run_id:', run_id)
 

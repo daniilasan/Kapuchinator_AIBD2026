@@ -8,6 +8,7 @@ from langchain.tools import BaseTool
 from langchain_community.utilities.requests import Requests
 from langchain_gigachat.chat_models.gigachat import GigaChat
 from dotenv import load_dotenv
+from ast import literal_eval
 
 load_dotenv()
 
@@ -24,12 +25,12 @@ if not GIGACHAT_CREDENTIALS:
 # ================= 2. Модель =================
 model = GigaChat(
     credentials=GIGACHAT_CREDENTIALS,
-    model='GigaChat-2-Pro',
+    model='GigaChat-2-Max',
     temperature=0.7,
     verify_ssl_certs=True,
     ca_bundle_file=CERT_PATH,
     max_tokens=2000,
-    top_p=0.9,
+    top_p=None,
     profanity_check=True,
     timeout=30)
 
@@ -47,18 +48,18 @@ with open('openapi_gigachat', 'r', encoding='utf-8') as f:
 
 # ================= 5. Единый инструмент call_api =================
 class CallApiInput(BaseModel):
-    method: str = Field(description="HTTP method: GET, POST, PUT, DELETE, PATCH")
+    method: str = Field(description="HTTP method: GET, POST")
     url_path: str = Field(
         description="Путь, где параметры уже подставлены. Например, '/clients/123' вместо '/clients/{id}'."
     )
-    body: Dict[str, Any] = Field(
+    body: str = Field(
         description="JSON-тело запроса"
     )
     run_id: str = Field(
         description="run_id, который прямым текстом указывается в начале запроса пользователя."
     )
-    query_params: Dict[str, Any] = Field(
-        description="Query-параметры в виде словаря. Например: {'q': 'подписка', 'limit': 10}"
+    query: str = Field(
+        description="Query-параметры в виде строки."
     )
     
 
@@ -71,13 +72,18 @@ class CallApiTool(BaseTool):
 
     def _run(self, method: str, url_path: str,
              run_id: str,
-             body: Optional[Dict] = None,
-             query_params: Optional[Dict] = None) -> str:
+             query: str,
+             body: str) -> str:
         full_url = f"{self.base_url}{url_path}"
         method = method.upper()
-        body['X-Run-Id'] = run_id
-        
         print("АГЕНТ ВЫЗЫВАЕТ МЕТОД", method, "ПО URL", full_url)
+        print('СЫРОЙ QUERY:', query)
+        
+        body['X-Run-Id'] = run_id
+        query_params = literal_eval(query)
+        body = literal_eval(body)
+        
+        
         print("QUERY_PARAMS:", query_params)
         print("BODY:", body)
 
@@ -98,25 +104,8 @@ class CallApiTool(BaseTool):
 tools = [CallApiTool()]
 
 # ================= 6. Системный промпт =================
-system_prompt = f"""
-Ты — ассистент, который умеет вызывать API. Доступны следующие эндпоинты:
 
-{endpoints_description}
-
-Для вызова API используй инструмент `call_api`. ВАЖНО:
-- Параметр `url_path` должен содержать уже подставленные значения. Например, вместо `/clients/{{id}}` передавай `/clients/123`.
-- Если пользователь спрашивает, какие API есть, перечисли их, используя описание выше.
-- Старайся не пользоваться Legacy и Beta эндпоинтами, если этого можно избежать
-
-Никогда не выдумывай эндпоинты, которых нет в списке.
-
-Анализируй вызываемые функции API, чтобы понять, решена ли проблема пользователя.
-ТОЛЬКО если проблема решена, то отправь сообщение следующего вида:
-end_of_case: Ответ
-Ответ должен представлять из себя описание проделанных действий и отчёт о том, что проблема выполнена (Пример: Здравствуйте, проблема с подпиской возникла на нашей стороне, был оформлен возврат средств на ваш счёт)
-
-
-"""
+system_prompt = f"""===== Аыаыаы ====="""
 
 # ================= 7. Агент =================
 agent = create_agent(
