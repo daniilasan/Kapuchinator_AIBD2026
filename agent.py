@@ -92,14 +92,16 @@ class CallApiTool(BaseTool):
             if method == "GET":
                 resp = self.requests_wrapper.get(full_url, params=query_params, json=body)
             elif method == "POST":
-                resp = self.requests_wrapper.post(full_url, params=query_params, json=body)
+                resp = self.requests_wrapper.post(full_url, params=query_params, data=body)
             else:
                 return f"Неподдерживаемый метод: {method}"
+            print('ОТВЕТ С СЕРВЕРА RESPONSE:', json.loads(resp.content), '\n\n\n')
             try:
                 return json.dumps(resp.json(), indent=2, ensure_ascii=False)
             except:
                 return resp.text
         except Exception as e:
+            print('Ошибка', str(e))
             return f"Ошибка вызова API: {str(e)}"
 
 tools = [CallApiTool()]
@@ -111,7 +113,7 @@ system_prompt = f"""Ты — банковский агент поддержки,
 ## ИНСТРУМЕНТ
 Ты можешь вызывать **единственный** инструмент `call_api`, который принимает параметры:
 - `method` – HTTP-метод (`GET` или `POST`)
-- `url_path` – путь, в котором **все path-параметры уже подставлены** ВАЖНО: НИКОГДА НЕ ИСПОЛЬЗУЙ ЗДЕСЬ НИКАКИЕ КАВЫЧКИ.  
+- `url_path` – путь, в котором **все path-параметры уже подставлены** !!!!!ВАЖНО: НИКОГДА НЕ ИСПОЛЬЗУЙ ЗДЕСЬ НИКАКИЕ КАВЫЧКИ!!!!!.  
   Пример: `/users/usr_123/transactions`, а не `/users/{{user_id}}/transactions`.
 - `query` – **строка**, содержащая Python-литерал словаря с query-параметрами.  
   Примеры: `"{{}}"`, `"{{'status': 'failed'}}"`, `"{{'category': 'payments'}}"`.  

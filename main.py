@@ -79,8 +79,8 @@ if __name__ == '__main__':
         print('Сервис в данный момент недоступен')
         exit()
 
-    case_number = 0
-    while case_number < 2:
+    case_number = 2
+    while case_number < 3:
         run_id = create_run()
         print('Run_id:', run_id)
 
