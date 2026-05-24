@@ -81,8 +81,8 @@ class CallApiTool(BaseTool):
         print('BODY В ВИДЕ СТРОКИ:', body)
         
         query_params = literal_eval(query)
-
         body = {} if body == '{}' else literal_eval(body)
+        self.requests_wrapper.headers['X-Run-Id'] = run_id
         
         
         print("QUERY_PARAMS:", query_params)
@@ -111,7 +111,7 @@ system_prompt = f"""Ты — банковский агент поддержки,
 ## ИНСТРУМЕНТ
 Ты можешь вызывать **единственный** инструмент `call_api`, который принимает параметры:
 - `method` – HTTP-метод (`GET` или `POST`)
-- `url_path` – путь, в котором **все path-параметры уже подставлены**.  
+- `url_path` – путь, в котором **все path-параметры уже подставлены** ВАЖНО: НИКОГДА НЕ ИСПОЛЬЗУЙ ЗДЕСЬ НИКАКИЕ КАВЫЧКИ.  
   Пример: `/users/usr_123/transactions`, а не `/users/{{user_id}}/transactions`.
 - `query` – **строка**, содержащая Python-литерал словаря с query-параметрами.  
   Примеры: `"{{}}"`, `"{{'status': 'failed'}}"`, `"{{'category': 'payments'}}"`.  
