@@ -83,6 +83,7 @@ class CallApiTool(BaseTool):
         query_params = literal_eval(query)
         body = {} if body == '{}' else literal_eval(body)
         self.requests_wrapper.headers['X-Run-Id'] = run_id
+        self.requests_wrapper.headers['X-Case-Password'] = 'boss-cases'
         
         
         print("QUERY_PARAMS:", query_params)

@@ -33,7 +33,7 @@ def get_case_id(case_number):
 
 def get_user_id(case_id):
     url = 'http://127.0.0.1:8000/cases/' + case_id
-    ticket_id = json.loads(requests.get(url).content)['intake']['ticket_id']
+    ticket_id = json.loads(requests.get(url, headers={'X-Case-Password': 'boss-cases'}).content)['intake']['ticket_id']
     ticket_url = 'http://127.0.0.1:8000/support/tickets/' + ticket_id
     user_id = json.loads(requests.get(ticket_url).content)['user_id']
     return user_id
@@ -41,7 +41,7 @@ def get_user_id(case_id):
 
 def get_user_question(case_id):
     url = 'http://127.0.0.1:8000/cases/' + case_id
-    user_question = json.loads(requests.get(url).content)['customer_message']
+    user_question = json.loads(requests.get(url, headers={'X-Case-Password': 'boss-cases'}).content)['customer_message']
     return user_question
 
 
@@ -49,7 +49,8 @@ def evaluate_run(run_id, case_id, answer : str, evidence: list, actions : list):
     url = 'http://127.0.0.1:8000/cases/' + case_id + '/evaluate'
     headers = {
         'accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Case-Password': 'boss-cases'
     }
     payload = {
         'run_id': run_id,
@@ -64,13 +65,13 @@ def evaluate_run(run_id, case_id, answer : str, evidence: list, actions : list):
 
 def get_metrics(run_id):
     url = 'http://127.0.0.1:8000/runs/' + run_id + '/metrics'
-    metrics = json.loads(requests.get(url).content)
+    metrics = json.loads(requests.get(url, headers={'X-Case-Password': 'boss-cases'}).content)
     return metrics
 
 
 def get_export(run_id):
     url = 'http://127.0.0.1:8000/runs/' + run_id + '/export'
-    export = json.loads(requests.get(url).content)
+    export = json.loads(requests.get(url, headers={'X-Case-Password': 'boss-cases'}).content)
     return export
 
 
@@ -79,8 +80,8 @@ if __name__ == '__main__':
         print('Сервис в данный момент недоступен')
         exit()
 
-    case_number = 1
-    while case_number < 2:
+    case_number = 0
+    while case_number < 10:
         run_id = create_run()
         print('Run_id:', run_id)
 
